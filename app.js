@@ -20,7 +20,12 @@
   function format(value) { return Number(value).toFixed(2); }
   function render() {
     document.body.classList.toggle("dark", state.dark);
+    $("theme-toggle").textContent = state.dark ? "☀" : "☾";
+    $("theme-toggle").setAttribute("aria-label", state.dark ? "Switch to light mode" : "Switch to dark mode");
+    $("theme-toggle").title = state.dark ? "Switch to light mode" : "Switch to dark mode";
     $("scale-select").value = state.scale;
+    $("planner-target").max = state.scale;
+    $("target-cgpa-input").max = state.scale;
     const total = overall(), best = state.semesters.reduce((winner, semester) => !winner || calculate(semester).gpa > calculate(winner).gpa ? semester : winner, null);
     $("cgpa-value").textContent = format(total.cgpa); $("cgpa-scale-label").textContent = `out of ${state.scale}.0`;
     $("credits-value").textContent = total.credits; $("semester-count").textContent = `${state.semesters.length} semester${state.semesters.length === 1 ? "" : "s"} recorded`;
@@ -79,7 +84,7 @@
   function toast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 2400); }
   function exportData() { const blob = new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString(), app: "Campus GPA" }, null, 2)], { type: "application/json" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "campus-gpa-backup.json"; link.click(); URL.revokeObjectURL(link.href); toast("Backup exported"); }
   function importData(file) {
-    const reader = new FileReader(); reader.onload = () => { try { const incoming = JSON.parse(reader.result); if (!incoming || !Array.isArray(incoming.semesters) || incoming.semesters.some(s => !s.name || !Array.isArray(s.subjects) || s.subjects.some(x => !x.name || Number(x.credits) <= 0 || !grades[state.scale].some(g => g.value === String(x.grade))))) throw new Error("invalid"); state = { ...defaultState, ...incoming, scale: incoming.scale === 4 ? 4 : 10, goals: { ...defaultState.goals, ...(incoming.goals || {}) } }; saveState(); render(); toast("Backup imported"); } catch { toast("Import failed: invalid backup file"); } }; reader.readAsText(file);
+    const reader = new FileReader(); reader.onload = () => { try { const incoming = JSON.parse(reader.result), incomingScale = incoming && incoming.scale === 4 ? 4 : 10; if (!incoming || !Array.isArray(incoming.semesters) || incoming.semesters.some(s => !s.name || !Array.isArray(s.subjects) || s.subjects.some(x => !x.name || Number(x.credits) <= 0 || !grades[incomingScale].some(g => g.value === String(x.grade))))) throw new Error("invalid"); state = { ...defaultState, ...incoming, scale: incomingScale, goals: { ...defaultState.goals, ...(incoming.goals || {}) } }; saveState(); render(); toast("Backup imported"); } catch { toast("Import failed: invalid backup file"); } }; reader.readAsText(file);
   }
   $("add-semester").onclick = $("add-semester-top").onclick = $("add-first-semester").onclick = () => openSemester();
   $("add-subject").onclick = () => addSubjectRow(); $("semester-form").onsubmit = saveSemester; $("scale-select").onchange = e => { state.scale = Number(e.target.value); saveState(); render(); };
