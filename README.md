@@ -15,6 +15,10 @@ Campus GPA is a no-build web app made with semantic HTML, modern CSS, and vanill
 | Live dashboard | [itzgarg1603-dev.github.io/campus-gpa](https://itzgarg1603-dev.github.io/campus-gpa/) |
 | GitHub repository | [itzgarg1603-dev/campus-gpa](https://github.com/itzgarg1603-dev/campus-gpa) |
 
+## Related project
+
+- [Tech Paradox Chat Tutor](https://github.com/ArchitJain786/Tech-Paradox-Chat-Tutor-) — an education-focused companion project.
+
 ## What you can do
 
 ### Track semesters
