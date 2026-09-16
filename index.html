@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Campus GPA is a private, offline-first semester GPA and CGPA planner.">
+  <title>Campus GPA · Academic dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#dashboard" aria-label="Campus GPA home">
+        <span class="brand-mark" aria-hidden="true">∑</span>
+        <span>Campus <strong>GPA</strong></span>
+      </a>
+      <div class="header-actions">
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">☾</button>
+        <button class="button button-primary button-small" id="add-semester-top" type="button">+ Add semester</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" class="app-shell">
+    <section class="hero" id="dashboard" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Your academic command center</p>
+        <h1 id="page-title">Make every credit count.</h1>
+        <p class="hero-copy">Track your semesters, model your next move, and keep your academic goals in sight.</p>
+      </div>
+      <div class="hero-badge"><span class="status-dot"></span><span id="storage-status">Saved locally</span></div>
+    </section>
+
+    <section class="metric-grid" aria-label="Academic summary">
+      <article class="metric-card metric-primary">
+        <div class="metric-label">Current CGPA <span class="tooltip" title="Credit-weighted cumulative GPA">?</span></div>
+        <div class="metric-value" id="cgpa-value">0.00</div>
+        <div class="metric-sub" id="cgpa-scale-label">out of 10.0</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Total credits</div>
+        <div class="metric-value" id="credits-value">0</div>
+        <div class="metric-sub" id="semester-count">0 semesters recorded</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Best semester</div>
+        <div class="metric-value" id="best-semester-value">—</div>
+        <div class="metric-sub" id="best-semester-sub">Add a semester to begin</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Target progress</div>
+        <div class="metric-value" id="goal-progress-value">0%</div>
+        <div class="metric-sub" id="goal-progress-sub">Set an academic goal below</div>
+      </article>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="panel chart-panel" aria-labelledby="performance-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">At a glance</p>
+            <h2 id="performance-heading">Performance trend</h2>
+          </div>
+          <span class="legend"><span class="legend-dot"></span> Semester GPA</span>
+        </div>
+        <div class="chart-wrap" id="performance-chart" aria-label="Semester GPA chart"></div>
+        <div class="empty-state compact" id="chart-empty">
+          <span class="empty-icon">↗</span>
+          <p>Your trend appears here once you add semesters.</p>
+        </div>
+      </section>
+
+      <section class="panel goals-panel" id="goals" aria-labelledby="goals-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Stay intentional</p>
+            <h2 id="goals-heading">Academic goals</h2>
+          </div>
+          <button class="text-button" id="edit-goals" type="button">Edit goals</button>
+        </div>
+        <div id="goals-view">
+          <div class="goal-row">
+            <div class="goal-icon goal-icon-blue">◎</div>
+            <div class="goal-info"><strong>Target CGPA</strong><span id="target-cgpa-display">Not set</span></div>
+            <div class="progress-ring" id="target-ring" aria-label="Target CGPA progress"><span>0%</span></div>
+          </div>
+          <div class="goal-row">
+            <div class="goal-icon goal-icon-orange">★</div>
+            <div class="goal-info"><strong>Credit goal</strong><span id="credit-goal-display">Not set</span></div>
+            <div class="progress-bar"><span id="credit-progress-bar"></span></div>
+          </div>
+          <div class="goal-row">
+            <div class="goal-icon goal-icon-purple">✓</div>
+            <div class="goal-info"><strong>Milestone</strong><span id="milestone-display">Keep showing up</span></div>
+          </div>
+        </div>
+        <form class="goals-form hidden" id="goals-form">
+          <label>Target CGPA <input id="target-cgpa-input" type="number" min="0" max="10" step="0.01" placeholder="e.g. 8.5"></label>
+          <label>Credit goal <input id="credit-goal-input" type="number" min="0" max="500" step="1" placeholder="e.g. 120"></label>
+          <label>Milestone <input id="milestone-input" type="text" maxlength="80" placeholder="e.g. Dean's list"></label>
+          <div class="form-actions"><button class="button button-ghost" id="cancel-goals" type="button">Cancel</button><button class="button button-primary" type="submit">Save goals</button></div>
+        </form>
+      </section>
+    </div>
+
+    <section class="planner-layout" id="planner">
+      <section class="panel planner-panel" aria-labelledby="planner-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Plan forward</p>
+            <h2 id="planner-heading">Target CGPA planner</h2>
+          </div>
+          <span class="pill">What if?</span>
+        </div>
+        <p class="panel-description">See the average you need in your remaining credits to reach your target.</p>
+        <div class="planner-fields">
+          <label>Target CGPA <input id="planner-target" type="number" min="0" max="10" step="0.01" value="8.5"></label>
+          <label>Remaining credits <input id="planner-credits" type="number" min="0" max="500" step="1" value="24"></label>
+        </div>
+        <div class="planner-result" id="planner-result"><span class="planner-result-label">Required average</span><strong id="required-average">—</strong><span id="planner-note">Add your semesters to calculate a projection.</span></div>
+      </section>
+      <section class="panel tips-panel" aria-labelledby="tips-heading">
+        <p class="eyebrow">Quick guide</p>
+        <h2 id="tips-heading">How the math works</h2>
+        <div class="formula"><span>CGPA</span><strong>=</strong><span>Σ (credits × grade points)</span><strong>÷</strong><span>Σ credits</span></div>
+        <p>Every subject is weighted by its credits, so a 4-credit course influences your result twice as much as a 2-credit course.</p>
+        <button class="text-button" id="scale-info" type="button">About grading scales →</button>
+      </section>
+    </section>
+
+    <section class="section-heading" id="history">
+      <div><p class="eyebrow">Your record</p><h2>Semester history</h2></div>
+      <button class="button button-primary" id="add-semester" type="button">+ Add semester</button>
+    </section>
+    <section class="panel history-panel">
+      <div class="history-toolbar">
+        <label class="select-label">Grading scale
+          <select id="scale-select"><option value="10">10-point scale</option><option value="4">4-point scale</option></select>
+        </label>
+        <div class="history-actions"><button class="button button-ghost button-small" id="export-data" type="button">Export JSON</button><button class="button button-ghost button-small" id="import-data" type="button">Import JSON</button><input id="import-file" type="file" accept="application/json,.json" hidden></div>
+      </div>
+      <div id="semester-list"></div>
+      <div class="empty-state" id="history-empty"><span class="empty-icon">✦</span><h3>No semesters yet</h3><p>Start with your first semester to unlock your GPA dashboard.</p><button class="button button-primary" id="add-first-semester" type="button">Add your first semester</button></div>
+    </section>
+
+    <section class="privacy-note"><span aria-hidden="true">⌁</span><span><strong>Private by design.</strong> Your academic data stays in this browser. Export a backup anytime.</span></section>
+  </main>
+
+  <dialog id="semester-dialog" aria-labelledby="dialog-title">
+    <form method="dialog" class="dialog-card" id="semester-form">
+      <button class="dialog-close" value="cancel" aria-label="Close dialog">×</button>
+      <p class="eyebrow">Semester details</p>
+      <h2 id="dialog-title">Add semester</h2>
+      <label>Semester name <input id="semester-name" type="text" maxlength="50" required placeholder="e.g. Semester 1"></label>
+      <div class="subject-header"><span>Subject</span><span>Credits</span><span>Grade</span><span></span></div>
+      <div id="subject-rows"></div>
+      <button class="button button-ghost add-subject" id="add-subject" type="button">+ Add subject</button>
+      <p class="form-error" id="semester-error" role="alert"></p>
+      <div class="form-actions"><button class="button button-ghost" value="cancel">Cancel</button><button class="button button-primary" id="save-semester" value="default">Save semester</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <footer><p>Campus GPA · Built for focused students</p><button class="text-button" id="print-results" type="button">Print summary</button></footer>
+  <script src="app.js"></script>
+</body>
+</html>
