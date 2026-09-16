@@ -77,6 +77,7 @@
   }
   function showError(message) { $("semester-error").textContent = message; }
   function saveSemester(event) {
+    if (event.submitter && event.submitter.value === "cancel") { event.preventDefault(); $("semester-dialog").close("cancel"); return; }
     event.preventDefault(); const name = $("semester-name").value.trim(), rows = [...document.querySelectorAll(".subject-row")]; const subjects = rows.map(row => ({ name: row.querySelector(".subject-name").value.trim(), credits: Number(row.querySelector(".subject-credits").value), grade: row.querySelector(".subject-grade").value }));
     if (!name || subjects.some(s => !s.name || !s.credits || s.credits <= 0)) { showError("Add a name and valid credits for every subject."); return; }
     const semester = { id: editingId || `semester-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, subjects, updatedAt: new Date().toISOString() }; const existing = state.semesters.findIndex(s => s.id === editingId); if (existing >= 0) state.semesters[existing] = semester; else state.semesters.push(semester); saveState(); render(); $("semester-dialog").close(); toast(existing >= 0 ? "Semester updated" : "Semester added");
