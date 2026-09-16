@@ -138,6 +138,27 @@
       </section>
     </section>
 
+    <section class="panel simulator-panel" id="simulator" aria-labelledby="simulator-heading">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Try before you record</p>
+          <h2 id="simulator-heading">Grade impact simulator</h2>
+        </div>
+        <span class="pill pill-green">Live preview</span>
+      </div>
+      <div class="simulator-content">
+        <p class="panel-description">Explore how one future subject could move your cumulative GPA. Nothing is saved until you add it to a semester.</p>
+        <div class="simulator-fields">
+          <label>Subject credits <input id="simulator-credits" type="number" min="0.5" max="30" step="0.5" value="3"></label>
+          <label>Expected grade <select id="simulator-grade"></select></label>
+        </div>
+        <div class="simulator-result">
+          <div><span>Projected CGPA</span><strong id="simulated-cgpa">—</strong></div>
+          <div class="simulator-delta" id="simulator-delta">Add semester data to see impact</div>
+        </div>
+      </div>
+    </section>
+
     <section class="section-heading" id="history">
       <div><p class="eyebrow">Your record</p><h2>Semester history</h2></div>
       <button class="button button-primary" id="add-semester" type="button">+ Add semester</button>

@@ -26,11 +26,17 @@
     $("scale-select").value = state.scale;
     $("planner-target").max = state.scale;
     $("target-cgpa-input").max = state.scale;
+    renderSimulatorOptions();
     const total = overall(), best = state.semesters.reduce((winner, semester) => !winner || calculate(semester).gpa > calculate(winner).gpa ? semester : winner, null);
     $("cgpa-value").textContent = format(total.cgpa); $("cgpa-scale-label").textContent = `out of ${state.scale}.0`;
     $("credits-value").textContent = total.credits; $("semester-count").textContent = `${state.semesters.length} semester${state.semesters.length === 1 ? "" : "s"} recorded`;
     $("best-semester-value").textContent = best ? format(calculate(best).gpa) : "—"; $("best-semester-sub").textContent = best ? best.name : "Add a semester to begin";
-    renderGoals(total); renderChart(); renderHistory(); calculatePlan();
+    renderGoals(total); renderChart(); renderHistory(); calculatePlan(); calculateSimulation();
+  }
+  function renderSimulatorOptions() {
+    const select = $("simulator-grade"), current = select.value;
+    select.innerHTML = grades[state.scale].map(g => `<option value="${g.value}">${g.label} · ${g.points} points</option>`).join("");
+    select.value = grades[state.scale].some(g => g.value === current) ? current : grades[state.scale][0].value;
   }
   function renderGoals(total) {
     const target = Number(state.goals.target) || 0, creditGoal = Number(state.goals.credits) || 0;
@@ -81,6 +87,16 @@
     $("required-average").textContent = total.credits && remaining ? (required <= state.scale ? required > 0 ? format(required) : "Already there" : "Not possible") : "—";
     $("planner-note").textContent = !total.credits ? "Add your semesters to calculate a projection." : !remaining ? "Enter remaining credits for a projection." : required <= state.scale && required > 0 ? `Average across your next ${remaining} credits.` : required <= 0 ? "You have already reached this target." : `This target exceeds the ${state.scale}-point scale.`;
   }
+  function calculateSimulation() {
+    const total = overall(), credits = Number($("simulator-credits").value), grade = pointsFor($("simulator-grade").value);
+    const projected = total.credits + credits > 0 ? (total.cgpa * total.credits + grade * credits) / (total.credits + credits) : 0;
+    $("simulated-cgpa").textContent = total.credits && credits ? format(projected) : "—";
+    const delta = projected - total.cgpa, deltaEl = $("simulator-delta");
+    deltaEl.className = "simulator-delta";
+    if (!total.credits || !credits) { deltaEl.textContent = "Add semester data to see impact"; return; }
+    deltaEl.textContent = `${delta >= 0 ? "↑" : "↓"} ${format(Math.abs(delta))} ${delta >= 0 ? "points higher" : "points lower"} than current`;
+    deltaEl.classList.add(delta >= 0 ? "positive" : "negative");
+  }
   function toast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 2400); }
   function exportData() { const blob = new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString(), app: "Campus GPA" }, null, 2)], { type: "application/json" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "campus-gpa-backup.json"; link.click(); URL.revokeObjectURL(link.href); toast("Backup exported"); }
   function importData(file) {
@@ -88,7 +104,7 @@
   }
   $("add-semester").onclick = $("add-semester-top").onclick = $("add-first-semester").onclick = () => openSemester();
   $("add-subject").onclick = () => addSubjectRow(); $("semester-form").onsubmit = saveSemester; $("scale-select").onchange = e => { state.scale = Number(e.target.value); saveState(); render(); };
-  $("planner-target").oninput = $("planner-credits").oninput = calculatePlan; $("edit-goals").onclick = () => { $("goals-view").classList.add("hidden"); $("goals-form").classList.remove("hidden"); $("target-cgpa-input").value = state.goals.target; $("credit-goal-input").value = state.goals.credits; $("milestone-input").value = state.goals.milestone; $("target-cgpa-input").focus(); };
+  $("planner-target").oninput = $("planner-credits").oninput = calculatePlan; $("simulator-credits").oninput = calculateSimulation; $("simulator-grade").onchange = calculateSimulation; $("edit-goals").onclick = () => { $("goals-view").classList.add("hidden"); $("goals-form").classList.remove("hidden"); $("target-cgpa-input").value = state.goals.target; $("credit-goal-input").value = state.goals.credits; $("milestone-input").value = state.goals.milestone; $("target-cgpa-input").focus(); };
   $("cancel-goals").onclick = () => { $("goals-form").classList.add("hidden"); $("goals-view").classList.remove("hidden"); };
   $("goals-form").onsubmit = e => { e.preventDefault(); state.goals = { target: $("target-cgpa-input").value, credits: $("credit-goal-input").value, milestone: $("milestone-input").value.trim() }; saveState(); render(); $("goals-form").classList.add("hidden"); $("goals-view").classList.remove("hidden"); toast("Goals updated"); };
   $("export-data").onclick = exportData; $("import-data").onclick = () => $("import-file").click(); $("import-file").onchange = e => { if (e.target.files[0]) importData(e.target.files[0]); e.target.value = ""; };
