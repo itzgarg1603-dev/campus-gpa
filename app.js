@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const KEY = "campus-gpa-v1";
-  const defaultState = { scale: 10, semesters: [], goals: { target: "", credits: "", milestone: "" }, dark: false };
+  const defaultState = { scale: 10, semesters: [], goals: { target: "", credits: "", milestone: "" }, profile: { name: "", university: "", roll: "" }, dark: false };
   const grades = { 10: [{ value: "10", label: "A+", points: 10 }, { value: "9", label: "A", points: 9 }, { value: "8", label: "B+", points: 8 }, { value: "7", label: "B", points: 7 }, { value: "6", label: "C", points: 6 }, { value: "5", label: "D", points: 5 }, { value: "0", label: "F", points: 0 }], 4: [{ value: "4", label: "A", points: 4 }, { value: "3", label: "B", points: 3 }, { value: "2", label: "C", points: 2 }, { value: "1", label: "D", points: 1 }, { value: "0", label: "F", points: 0 }] };
   let state = loadState(), editingId = null;
   const $ = id => document.getElementById(id);
@@ -10,7 +10,7 @@
     try {
       const saved = JSON.parse(localStorage.getItem(KEY) || "null");
       if (!saved || !Array.isArray(saved.semesters)) return JSON.parse(JSON.stringify(defaultState));
-      return { ...defaultState, ...saved, scale: saved.scale === 4 ? 4 : 10, goals: { ...defaultState.goals, ...(saved.goals || {}) } };
+      return { ...defaultState, ...saved, scale: saved.scale === 4 ? 4 : 10, goals: { ...defaultState.goals, ...(saved.goals || {}) }, profile: { ...defaultState.profile, ...(saved.profile || {}) } };
     } catch { return JSON.parse(JSON.stringify(defaultState)); }
   }
   function saveState() { localStorage.setItem(KEY, JSON.stringify(state)); $("storage-status").textContent = "Saved locally"; }
@@ -23,6 +23,7 @@
     $("theme-toggle").textContent = state.dark ? "☀" : "☾";
     $("theme-toggle").setAttribute("aria-label", state.dark ? "Switch to light mode" : "Switch to dark mode");
     $("theme-toggle").title = state.dark ? "Switch to light mode" : "Switch to dark mode";
+    renderProfile();
     $("scale-select").value = state.scale;
     $("planner-target").max = state.scale;
     $("target-cgpa-input").max = state.scale;
@@ -32,6 +33,13 @@
     $("credits-value").textContent = total.credits; $("semester-count").textContent = `${state.semesters.length} semester${state.semesters.length === 1 ? "" : "s"} recorded`;
     $("best-semester-value").textContent = best ? format(calculate(best).gpa) : "—"; $("best-semester-sub").textContent = best ? best.name : "Add a semester to begin";
     renderGoals(total); renderChart(); renderHistory(); calculatePlan(); calculateSimulation();
+  }
+  function renderProfile() {
+    const profile = state.profile, name = profile.name || "Your name";
+    $("student-name-display").textContent = name;
+    $("university-display").textContent = profile.university || "Add your university";
+    $("roll-display").textContent = profile.roll || "Add roll number";
+    $("profile-avatar").textContent = name === "Your name" ? "S" : name.charAt(0).toUpperCase();
   }
   function renderSimulatorOptions() {
     const select = $("simulator-grade"), current = select.value;
@@ -107,13 +115,16 @@
   }
   function exportData() { const blob = new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString(), app: "Campus GPA" }, null, 2)], { type: "application/json" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "campus-gpa-backup.json"; link.click(); URL.revokeObjectURL(link.href); toast("Backup exported"); }
   function importData(file) {
-    const reader = new FileReader(); reader.onload = () => { try { const incoming = JSON.parse(reader.result), incomingScale = incoming && incoming.scale === 4 ? 4 : 10; if (!incoming || !Array.isArray(incoming.semesters) || incoming.semesters.some(s => !s.name || !Array.isArray(s.subjects) || s.subjects.some(x => !x.name || Number(x.credits) <= 0 || !grades[incomingScale].some(g => g.value === String(x.grade))))) throw new Error("invalid"); state = { ...defaultState, ...incoming, scale: incomingScale, goals: { ...defaultState.goals, ...(incoming.goals || {}) } }; saveState(); render(); toast("Backup imported"); } catch { toast("Import failed: invalid backup file"); } }; reader.readAsText(file);
+    const reader = new FileReader(); reader.onload = () => { try { const incoming = JSON.parse(reader.result), incomingScale = incoming && incoming.scale === 4 ? 4 : 10; if (!incoming || !Array.isArray(incoming.semesters) || incoming.semesters.some(s => !s.name || !Array.isArray(s.subjects) || s.subjects.some(x => !x.name || Number(x.credits) <= 0 || !grades[incomingScale].some(g => g.value === String(x.grade))))) throw new Error("invalid"); state = { ...defaultState, ...incoming, scale: incomingScale, goals: { ...defaultState.goals, ...(incoming.goals || {}) }, profile: { ...defaultState.profile, ...(incoming.profile || {}) } }; saveState(); render(); toast("Backup imported"); } catch { toast("Import failed: invalid backup file"); } }; reader.readAsText(file);
   }
   $("add-semester").onclick = $("add-semester-top").onclick = $("add-first-semester").onclick = () => openSemester();
   $("add-subject").onclick = () => addSubjectRow(); $("cancel-semester").onclick = () => $("semester-dialog").close("cancel"); $("semester-form").onsubmit = saveSemester; $("scale-select").onchange = e => { state.scale = Number(e.target.value); saveState(); render(); };
   $("planner-target").oninput = $("planner-credits").oninput = calculatePlan; $("simulator-credits").oninput = calculateSimulation; $("simulator-grade").onchange = calculateSimulation; $("edit-goals").onclick = () => { $("goals-view").classList.add("hidden"); $("goals-form").classList.remove("hidden"); $("target-cgpa-input").value = state.goals.target; $("credit-goal-input").value = state.goals.credits; $("milestone-input").value = state.goals.milestone; $("target-cgpa-input").focus(); };
   $("cancel-goals").onclick = () => { $("goals-form").classList.add("hidden"); $("goals-view").classList.remove("hidden"); };
   $("goals-form").onsubmit = e => { e.preventDefault(); state.goals = { target: $("target-cgpa-input").value, credits: $("credit-goal-input").value, milestone: $("milestone-input").value.trim() }; saveState(); render(); $("goals-form").classList.add("hidden"); $("goals-view").classList.remove("hidden"); toast("Goals updated"); };
+  $("edit-profile").onclick = () => { $("student-name-input").value = state.profile.name; $("university-input").value = state.profile.university; $("roll-input").value = state.profile.roll; $("profile-form").classList.remove("hidden"); $("student-name-input").focus(); };
+  $("cancel-profile").onclick = () => $("profile-form").classList.add("hidden");
+  $("profile-form").onsubmit = e => { e.preventDefault(); state.profile = { name: $("student-name-input").value.trim(), university: $("university-input").value.trim(), roll: $("roll-input").value.trim() }; saveState(); render(); $("profile-form").classList.add("hidden"); toast("Profile updated"); };
   $("export-data").onclick = exportData; $("import-data").onclick = () => $("import-file").click(); $("import-file").onchange = e => { if (e.target.files[0]) importData(e.target.files[0]); e.target.value = ""; };
   $("theme-toggle").onclick = () => { state.dark = !state.dark; saveState(); render(); }; $("print-results").onclick = () => window.print(); $("scale-info").onclick = () => toast("10-point: A+ to F · 4-point: A to F");
   $("cgpa-help").onclick = () => showHelp($("cgpa-help"), "CGPA is your credit-weighted average across every recorded semester.");
