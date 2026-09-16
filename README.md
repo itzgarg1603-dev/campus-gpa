@@ -2,6 +2,8 @@
 
 Campus GPA is a mobile-first, offline-first GPA dashboard built with semantic HTML, responsive CSS, and vanilla JavaScript. It has no framework, bundler, backend, or install step.
 
+[**Open the live Campus GPA dashboard →**](https://itzgarg1603-dev.github.io/campus-gpa/)
+
 ## Features
 
 - Add, edit, expand, and delete semester records with subject name, credits, and grade.
@@ -32,5 +34,11 @@ CGPA is calculated as:
 `sum(subject credits × grade points) / sum(subject credits)`
 
 ## Deploy
+
+The production app is published from the `main` branch using GitHub Pages:
+
+- **Live app:** https://itzgarg1603-dev.github.io/campus-gpa/
+- **Repository:** https://github.com/itzgarg1603-dev/campus-gpa
+- **Source branch:** `main`
 
 The app is static and GitHub Pages-ready. Publish the repository root from the `main` branch in **Settings → Pages**, or use the GitHub Pages workflow in your own deployment setup.
