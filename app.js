@@ -98,6 +98,13 @@
     deltaEl.classList.add(delta >= 0 ? "positive" : "negative");
   }
   function toast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 2400); }
+  function showHelp(button, message) {
+    const popover = $("help-popover"), wasOpen = button.getAttribute("aria-expanded") === "true";
+    document.querySelectorAll("[aria-expanded=\"true\"]").forEach(item => item.setAttribute("aria-expanded", "false"));
+    if (wasOpen) { popover.classList.remove("show"); return; }
+    button.setAttribute("aria-expanded", "true"); popover.textContent = message; popover.classList.add("show");
+    const rect = button.getBoundingClientRect(); popover.style.top = `${rect.bottom + window.scrollY + 9}px`; popover.style.left = `${Math.min(window.innerWidth - 300, Math.max(12, rect.left + window.scrollX - 110))}px`;
+  }
   function exportData() { const blob = new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString(), app: "Campus GPA" }, null, 2)], { type: "application/json" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "campus-gpa-backup.json"; link.click(); URL.revokeObjectURL(link.href); toast("Backup exported"); }
   function importData(file) {
     const reader = new FileReader(); reader.onload = () => { try { const incoming = JSON.parse(reader.result), incomingScale = incoming && incoming.scale === 4 ? 4 : 10; if (!incoming || !Array.isArray(incoming.semesters) || incoming.semesters.some(s => !s.name || !Array.isArray(s.subjects) || s.subjects.some(x => !x.name || Number(x.credits) <= 0 || !grades[incomingScale].some(g => g.value === String(x.grade))))) throw new Error("invalid"); state = { ...defaultState, ...incoming, scale: incomingScale, goals: { ...defaultState.goals, ...(incoming.goals || {}) } }; saveState(); render(); toast("Backup imported"); } catch { toast("Import failed: invalid backup file"); } }; reader.readAsText(file);
@@ -109,5 +116,8 @@
   $("goals-form").onsubmit = e => { e.preventDefault(); state.goals = { target: $("target-cgpa-input").value, credits: $("credit-goal-input").value, milestone: $("milestone-input").value.trim() }; saveState(); render(); $("goals-form").classList.add("hidden"); $("goals-view").classList.remove("hidden"); toast("Goals updated"); };
   $("export-data").onclick = exportData; $("import-data").onclick = () => $("import-file").click(); $("import-file").onchange = e => { if (e.target.files[0]) importData(e.target.files[0]); e.target.value = ""; };
   $("theme-toggle").onclick = () => { state.dark = !state.dark; saveState(); render(); }; $("print-results").onclick = () => window.print(); $("scale-info").onclick = () => toast("10-point: A+ to F · 4-point: A to F");
+  $("cgpa-help").onclick = () => showHelp($("cgpa-help"), "CGPA is your credit-weighted average across every recorded semester.");
+  $("planner-help").onclick = () => showHelp($("planner-help"), "Use the planner to model the average grade you need across your remaining credits.");
+  document.addEventListener("click", event => { if (!event.target.closest("#cgpa-help, #planner-help, #help-popover")) { $("help-popover").classList.remove("show"); document.querySelectorAll("[aria-expanded=\"true\"]").forEach(item => item.setAttribute("aria-expanded", "false")); } });
   render();
 })();

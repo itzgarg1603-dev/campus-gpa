@@ -43,7 +43,7 @@
 
     <section class="metric-grid" aria-label="Academic summary">
       <article class="metric-card metric-primary">
-        <div class="metric-label">Current CGPA <span class="tooltip" title="Credit-weighted cumulative GPA">?</span></div>
+        <div class="metric-label">Current CGPA <button class="tooltip" id="cgpa-help" type="button" aria-label="What is CGPA?" aria-expanded="false">?</button></div>
         <div class="metric-value" id="cgpa-value">0.00</div>
         <div class="metric-sub" id="cgpa-scale-label">out of 10.0</div>
       </article>
@@ -120,7 +120,7 @@
             <p class="eyebrow">Plan forward</p>
             <h2 id="planner-heading">Target CGPA planner</h2>
           </div>
-          <span class="pill">What if?</span>
+          <button class="pill pill-button" id="planner-help" type="button" aria-expanded="false">What if?</button>
         </div>
         <p class="panel-description">See the average you need in your remaining credits to reach your target.</p>
         <div class="planner-fields">
@@ -191,6 +191,7 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="help-popover" id="help-popover" role="status" aria-live="polite"></div>
   <footer><p>Campus GPA · Built for focused students</p><button class="text-button" id="print-results" type="button">Print summary</button></footer>
   <script src="app.js"></script>
 </body>
